@@ -70,7 +70,7 @@ Job-Portal/
 ### Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+git clone https://github.com/AbhayPatange/Job-Portal.git
 ```
 
 Move into the project
