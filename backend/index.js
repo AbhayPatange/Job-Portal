@@ -19,7 +19,7 @@ app.use(cookieParser());
 const corsOptions = {
     origin: [
         "http://localhost:5173",
-        "https://YOUR-FRONTEND.vercel.app"
+        "https://jobportal-abhayproject.vercel.app/"
     ],
     credentials: true,
 }
