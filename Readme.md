@@ -155,18 +155,6 @@ http://localhost:5173
 
 ---
 
-## Screenshots
-
-> Add screenshots of:
-- Login Page
-- Home Page
-- Job Listing
-- Company Dashboard
-- Admin Dashboard
-- Applicant List
-
----
-
 ## Future Improvements
 
 - Email Verification
