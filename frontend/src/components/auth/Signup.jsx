@@ -148,7 +148,7 @@ const Signup = () => {
             <Navbar />
             <AuthShell>
                 <form onSubmit={submitHandler} className='w-1/2 border border-gray-200 rounded-md p-4 my-10'>
-                    <h1>Start something good.</h1><p className="auth-subtitle">Join carrerNex. Your next opportunity starts with you.</p>
+                    <h1>Start something good.</h1><p className="auth-subtitle">Join CarrerNex. Your next opportunity starts with you.</p>
                     <div className='my-2'>
                         <Label htmlFor="fullname">Full Name</Label>
                         <Input

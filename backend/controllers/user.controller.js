@@ -132,8 +132,8 @@ export const updateProfile = async (req, res) => {
 
 
         let skillsArray;
-        if (skills) {
-            skillsArray = skills.split(",");
+        if (typeof skills === 'string') {
+            skillsArray = skills.split(',').map(skill => skill.trim()).filter(Boolean);
         }
         const userId = req.id; // middleware authentication
         let user = await User.findById(userId);
@@ -148,8 +148,8 @@ export const updateProfile = async (req, res) => {
         if (fullname) user.fullname = fullname
         if (email) user.email = email
         if (phoneNumber) user.phoneNumber = phoneNumber
-        if (bio) user.profile.bio = bio
-        if (skills) user.profile.skills = skillsArray
+        if (typeof bio === 'string') user.profile.bio = bio.trim()
+        if (typeof skills === 'string') user.profile.skills = skillsArray
 
         // resume comes later here...
         if (cloudResponse) {

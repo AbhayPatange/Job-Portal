@@ -9,7 +9,7 @@ export default function Footer() {
           <p>
             A little ambition. A world of possibility.
             <br />
-            Find your next chapter with carrerNex.
+            Find your next chapter with CarrerNex.
           </p>
         </div>
         <div>
@@ -27,7 +27,7 @@ export default function Footer() {
       </div>
       <div className="footer-bottom">
         <span>
-          © {new Date().getFullYear()} carrerNex. All rights reserved.
+          © {new Date().getFullYear()} CarrerNex. All rights reserved.
         </span>
         <span>Made for your next chapter.</span>
       </div>

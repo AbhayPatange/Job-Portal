@@ -14,7 +14,7 @@ export default function NotFound() {
             there.
           </p>
           <Link to="/" className="button-primary mt-6">
-            Back to carrerNex
+            Back to CarrerNex
           </Link>
         </div>
       </main>

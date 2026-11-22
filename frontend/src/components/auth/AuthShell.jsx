@@ -30,7 +30,7 @@ export default function AuthShell({ children }) {
           </span>
         </div>
         <div className="auth-story-bottom">
-          Your next chapter starts with carrerNex.
+          Your next chapter starts with CarrerNex.
         </div>
       </aside>
       <div className="auth-form-panel">{children}</div>
