@@ -20,6 +20,8 @@ app.use(cookieParser());
 const allowedOrigins = [
     "http://localhost:5173",
     "https://jobportal-two-xi.vercel.app",
+    "https://jobportal-abhayproject.vercel.app",
+    "https://jobportal-5ebdrgxku-abhays-projects-16a72075.vercel.app",
     ...(process.env.CLIENT_URL || "").split(","),
 ]
     .map((origin) => origin.trim().replace(/\/$/, ""))
