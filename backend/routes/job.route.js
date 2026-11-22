@@ -1,8 +1,12 @@
 import express from "express";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import { getAdminJobs, getAllJobs, getJobById, postJob } from "../controllers/job.controller.js";
+import { fitStatus, checkJobFit } from '../controllers/fit.controller.js';
+import { authRateLimit } from '../middlewares/authRateLimit.js';
 
 const router = express.Router();
+router.get('/fit-status', fitStatus);
+router.post('/:id/fit', isAuthenticated, authRateLimit, checkJobFit);
 
 router.route("/post").post(isAuthenticated, postJob);
 router.route("/get").get(getAllJobs);
