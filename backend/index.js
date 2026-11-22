@@ -16,13 +16,26 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
+
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://jobportal-two-xi.vercel.app",
+    ...(process.env.CLIENT_URL || "").split(","),
+]
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+
 const corsOptions = {
-    origin: [
-        "http://localhost:5173",
-        "https://jobportal-abhayproject.vercel.app/"
-    ],
+    origin(origin, callback) {
+        // Requests without an Origin header (health checks, curl, etc.) are safe
+        // to allow; browsers must match one of the configured frontend origins.
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
     credentials: true,
-}
+};
 
 app.use(cors(corsOptions));
 
@@ -37,7 +50,14 @@ app.use("/api/v1/application", applicationRoute);
 
 
 
-app.listen(PORT,()=>{
-    connectDB();
-    console.log(`Server running at port ${PORT}`);
-})
+const startServer = async () => {
+    await connectDB();
+    app.listen(PORT, () => {
+        console.log(`Server running at port ${PORT}`);
+    });
+};
+
+startServer().catch((error) => {
+    console.error("Unable to start server", error);
+    process.exit(1);
+});
