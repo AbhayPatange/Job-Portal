@@ -6,19 +6,20 @@ import cloudinary from "../utils/cloudinary.js";
 
 
 export const register = async (req, res) => {
-    
+
     try {
         const { fullname, email, phoneNumber, password, role } = req.body;
-         
-        if (!fullname || !email || !phoneNumber || !password || !role) {
+
+        if (typeof fullname !== 'string' || typeof email !== 'string' || typeof password !== 'string' || typeof role !== 'string' || !fullname || !email || !phoneNumber || !password || !role) {
             return res.status(400).json({
                 message: "Something is missing",
                 success: false
             });
         };
-        const file = req.file;
-        const fileUri = getDataUri(file);
-        const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+        if (!['student', 'recruiter'].includes(role) || typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password) > 72) {
+            return res.status(400).json({ success: false, message: 'Choose a valid role and a password of at least 8 characters (maximum 72 bytes).' });
+        }
+        const cloudResponse = req.file ? await cloudinary.uploader.upload(getDataUri(req.file).content) : null;
 
         const user = await User.findOne({ email });
         if (user) {
@@ -35,8 +36,8 @@ export const register = async (req, res) => {
             phoneNumber,
             password: hashedPassword,
             role,
-            profile:{
-                profilePhoto:cloudResponse.secure_url,
+            profile: {
+                profilePhoto: cloudResponse?.secure_url || '',
             }
         });
 
@@ -45,20 +46,20 @@ export const register = async (req, res) => {
             success: true
         });
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
     }
 }
 export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
-        
-        if (!email || !password || !role) {
+
+        if (typeof email !== 'string' || typeof password !== 'string' || typeof role !== 'string' || !email || !password || !role) {
             return res.status(400).json({
                 message: "Something is missing",
                 success: false
             });
         };
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email }).select('+tokenVersion');
         if (!user) {
             return res.status(400).json({
                 message: "Incorrect email or password.",
@@ -81,7 +82,8 @@ export const login = async (req, res) => {
         };
 
         const tokenData = {
-            userId: user._id
+            userId: user._id,
+            tokenVersion: user.tokenVersion || 0,
         }
         const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
 
@@ -101,7 +103,7 @@ export const login = async (req, res) => {
             success: true
         })
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
     }
 }
 export const logout = async (req, res) => {
@@ -112,22 +114,25 @@ export const logout = async (req, res) => {
             success: true
         })
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
     }
 }
 export const updateProfile = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
-        
+
         const file = req.file;
-        // cloudinary ayega idhar
-        const fileUri = getDataUri(file);
-        const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+        let cloudResponse = null;
+
+        if (file) {
+            const fileUri = getDataUri(file);
+            cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+        }
 
 
 
         let skillsArray;
-        if(skills){
+        if (skills) {
             skillsArray = skills.split(",");
         }
         const userId = req.id; // middleware authentication
@@ -140,14 +145,14 @@ export const updateProfile = async (req, res) => {
             })
         }
         // updating data
-        if(fullname) user.fullname = fullname
-        if(email) user.email = email
-        if(phoneNumber)  user.phoneNumber = phoneNumber
-        if(bio) user.profile.bio = bio
-        if(skills) user.profile.skills = skillsArray
-      
+        if (fullname) user.fullname = fullname
+        if (email) user.email = email
+        if (phoneNumber) user.phoneNumber = phoneNumber
+        if (bio) user.profile.bio = bio
+        if (skills) user.profile.skills = skillsArray
+
         // resume comes later here...
-        if(cloudResponse){
+        if (cloudResponse) {
             user.profile.resume = cloudResponse.secure_url // save the cloudinary url
             user.profile.resumeOriginalName = file.originalname // Save the original file name
         }
@@ -165,11 +170,11 @@ export const updateProfile = async (req, res) => {
         }
 
         return res.status(200).json({
-            message:"Profile updated successfully.",
+            message: "Profile updated successfully.",
             user,
-            success:true
+            success: true
         })
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
     }
 }

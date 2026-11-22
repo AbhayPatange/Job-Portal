@@ -11,6 +11,7 @@ import applicationRoute from "./routes/application.route.js";
 dotenv.config({});
 
 const app = express();
+if (process.env.RENDER === 'true') app.set('trust proxy', 1);
 
 // middleware
 app.use(express.json());
@@ -49,6 +50,11 @@ app.use("/api/v1/user", userRoute);
 app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
+
+app.use((error, req, res, next) => {
+    const status = error.code === 11000 ? 409 : ['ValidationError', 'CastError', 'MulterError', 'SyntaxError'].includes(error.name) ? 400 : 500;
+    res.status(status).json({ success: false, message: status === 409 ? 'That value is already in use.' : status === 400 ? 'Please check the submitted information.' : 'Something went wrong. Please try again.' });
+});
 
 
 

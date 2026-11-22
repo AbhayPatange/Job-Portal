@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
+    resetTokenHash: { type: String, select: false },
+    resetTokenExpires: { type: Date, select: false },
+    tokenVersion: { type: Number, default: 0, select: false },
     fullname: {
         type: String,
         required: true

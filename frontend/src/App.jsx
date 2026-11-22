@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Navbar from './components/shared/Navbar'
 import Login from './components/auth/Login'
+import PasswordRecovery from './components/auth/PasswordRecovery'
 import Signup from './components/auth/Signup'
 import Home from './components/Home'
 import Jobs from './components/Jobs'
@@ -17,6 +18,8 @@ import ProtectedRoute from './components/admin/ProtectedRoute'
 
 
 const appRouter = createBrowserRouter([
+  { path: '/forgot-password', element: <PasswordRecovery /> },
+  { path: '/reset-password', element: <PasswordRecovery reset /> },
   {
     path: '/',
     element: <Home />

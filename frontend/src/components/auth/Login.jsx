@@ -10,6 +10,7 @@ import { USER_API_END_POINT } from '@/utils/constant'
 import { toast } from 'sonner'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLoading, setUser } from '@/redux/authSlice'
+import PasswordInput from './PasswordInput'
 import { Loader2 } from 'lucide-react'
 
 const Login = () => {
@@ -72,8 +73,9 @@ const Login = () => {
 
                     <div className='my-2'>
                         <Label>Password</Label>
-                        <Input
-                            type="password"
+                        <Link to="/forgot-password" className="float-right text-sm text-blue-600">Forgot password?</Link>
+                        <PasswordInput
+                            autoComplete="current-password"
                             value={input.password}
                             name="password"
                             onChange={changeEventHandler}
@@ -107,7 +109,7 @@ const Login = () => {
                         </RadioGroup>
                     </div>
                     {
-                        loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>
+                        loading ? <Button disabled className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>
                     }
                     <span className='text-sm'>Don't have an account? <Link to="/signup" className='text-blue-600'>Signup</Link></span>
                 </form>

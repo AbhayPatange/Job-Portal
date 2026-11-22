@@ -42,7 +42,7 @@ export const applyJob = async (req, res) => {
             success:true
         })
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
     }
 };
 export const getAppliedJobs = async (req,res) => {
@@ -67,18 +67,18 @@ export const getAppliedJobs = async (req,res) => {
             success:true
         })
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
     }
 }
 // admin dekhega kitna user ne apply kiya hai
 export const getApplicants = async (req,res) => {
     try {
         const jobId = req.params.id;
-        const job = await Job.findById(jobId).populate({
+        const job = await Job.findOne({ _id: jobId, created_by: req.id }).populate({
             path:'applications',
             options:{sort:{createdAt:-1}},
             populate:{
-                path:'applicant'
+                path:'applicant', select: 'fullname email phoneNumber profile'
             }
         });
         if(!job){
@@ -89,10 +89,10 @@ export const getApplicants = async (req,res) => {
         };
         return res.status(200).json({
             job, 
-            succees:true
+            success:true
         });
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
     }
 }
 export const updateStatus = async (req,res) => {
@@ -115,6 +115,8 @@ export const updateStatus = async (req,res) => {
             })
         };
 
+        if (req.role !== 'recruiter' || !await Job.exists({ _id: application.job, created_by: req.id })) return res.status(403).json({ success: false, message: 'You cannot update this application.' });
+        if (typeof status !== 'string' || !['pending', 'accepted', 'rejected'].includes(status.toLowerCase())) return res.status(400).json({ success: false, message: 'Invalid application status.' });
         // update the status
         application.status = status.toLowerCase();
         await application.save();
@@ -125,6 +127,6 @@ export const updateStatus = async (req,res) => {
         });
 
     } catch (error) {
-        console.log(error);
+        return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
     }
 }
