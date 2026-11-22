@@ -27,7 +27,7 @@ const Applicants = () => {
         <div>
             <Navbar />
             <div className='max-w-7xl mx-auto'>
-                <h1 className='font-bold text-xl my-5'>Applicants {applicants?.applications?.length}</h1>
+                <div className="dashboard-heading"><span className="eyebrow">MAKE A GREAT CONNECTION</span><h1>Your next teammate could be here.</h1><p>{applicants?.applications?.length || 0} applications to explore. Review their experience and take the conversation forward.</p></div>
                 <ApplicantsTable />
             </div>
         </div>

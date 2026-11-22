@@ -20,7 +20,7 @@ export async function forgotPassword(req, res, next) {
                 const response = await fetch('https://api.resend.com/emails', {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ from: process.env.RESET_EMAIL_FROM, to: [user.email], subject: 'Reset your Job Portal password', text: `Reset your password using this link (expires in 15 minutes):\n${url}\n\nIf you did not request this, ignore this email.` }),
+                    body: JSON.stringify({ from: process.env.RESET_EMAIL_FROM, to: [user.email], subject: 'Reset your carrerNex password', text: `Reset your carrerNex password using this link (expires in 15 minutes):\n${url}\n\nIf you did not request this, ignore this email.` }),
                     signal: AbortSignal.timeout(10000),
                 });
                 if (!response.ok) throw new Error('Email delivery failed');

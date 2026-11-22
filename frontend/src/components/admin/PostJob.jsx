@@ -64,7 +64,7 @@ const PostJob = () => {
             <Navbar />
             <div className='flex items-center justify-center w-screen my-5'>
                 <form onSubmit = {submitHandler} className='p-8 max-w-4xl border border-gray-200 shadow-lg rounded-md'>
-                    <div className='grid grid-cols-2 gap-2'>
+                    <div className="dashboard-heading"><span className="eyebrow">MAKE ROOM FOR GREAT TALENT</span><h1>Share an opportunity.</h1><p>Tell candidates what makes this role worth their next move.</p></div><div className='grid grid-cols-2 gap-2'>
                         <div>
                             <Label>Title</Label>
                             <Input
@@ -136,7 +136,7 @@ const PostJob = () => {
                             />
                         </div>
                         <div>
-                            <Label>No of Postion</Label>
+                            <Label>Number of openings</Label>
                             <Input
                                 type="number"
                                 name="position"

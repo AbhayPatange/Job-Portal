@@ -1,3 +1,4 @@
+import AuthShell from './AuthShell';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
@@ -29,7 +30,7 @@ export default function PasswordRecovery({ reset = false }) {
         } catch (error) { setMessage(error.response?.data?.message || 'Unable to reach the server. Please try again.'); }
         finally { setBusy(false); }
     }
-    return <><Navbar /><main className="mx-auto max-w-md p-6 my-10 border rounded-lg">
+    return <><Navbar /><AuthShell><main className="mx-auto max-w-md p-6 my-10 border rounded-lg">
         <h1 className="text-2xl font-bold mb-3">{reset ? 'Reset password' : 'Forgot password?'}</h1>
         <p className="text-sm text-gray-600 mb-5">{reset ? 'Choose a new password with at least 8 characters.' : 'Enter your account email and we’ll send you a reset link.'}</p>
         {invalid ? <p role="alert">This link is invalid. <Link className="text-blue-600" to="/forgot-password">Request a new link</Link>.</p> : !done && <form onSubmit={submit} className="space-y-4">
@@ -39,5 +40,5 @@ export default function PasswordRecovery({ reset = false }) {
         </form>}
         {message && <p role="status" className="my-4">{message}</p>}
         <Link className="block text-blue-600 mt-5" to="/login">Back to login</Link>
-    </main></>;
+    </main></AuthShell></>;
 }

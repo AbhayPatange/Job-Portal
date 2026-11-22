@@ -4,13 +4,15 @@ import axios from 'axios'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
-const useGetAllJobs = () => {
+const useGetAllJobs = (queryOverride) => {
     const dispatch = useDispatch();
     const {searchedQuery} = useSelector(store=>store.job);
+    const query = queryOverride ?? searchedQuery;
     useEffect(()=>{
+        const controller = new AbortController();
         const fetchAllJobs = async () => {
             try {
-                const res = await axios.get(`${JOB_API_END_POINT}/get?keyword=${encodeURIComponent(searchedQuery)}`,{withCredentials:true});
+                const res = await axios.get(`${JOB_API_END_POINT}/get?keyword=${encodeURIComponent(query)}`,{withCredentials:true, signal: controller.signal});
                 if(res.data.success){
                     dispatch(setAllJobs(res.data.jobs));
                 }
@@ -19,7 +21,8 @@ const useGetAllJobs = () => {
             }
         }
         fetchAllJobs();
-    },[searchedQuery, dispatch])
+        return () => controller.abort();
+    },[query, dispatch])
 }
 
 export default useGetAllJobs

@@ -21,13 +21,14 @@ const Companies = () => {
         <div>
             <Navbar />
             <div className='max-w-6xl mx-auto my-10'>
+<div className="dashboard-heading"><span className="eyebrow">YOUR RECRUITER WORKSPACE</span><h1>Great teams start here.</h1><p>Build your company’s presence and connect with ambitious people.</p></div>
                 <div className='flex items-center justify-between my-5'>
                     <Input
                         className="w-fit"
                         placeholder="Filter by name"
                         onChange={(e) => setInput(e.target.value)}
                     />
-                    <Button onClick={() => navigate("/admin/companies/create")}>New Company</Button>
+                    <Button onClick={() => navigate("/admin/companies/create")}>Add company</Button>
                 </div>
                 <CompaniesTable/>
             </div>

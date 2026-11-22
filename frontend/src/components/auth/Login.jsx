@@ -1,3 +1,4 @@
+import AuthShell from './AuthShell';
 import React, { useEffect, useState } from 'react'
 import Navbar from '../shared/Navbar'
 import { Label } from '../ui/label'
@@ -57,29 +58,29 @@ const Login = () => {
     return (
         <div>
             <Navbar />
-            <div className='flex items-center justify-center max-w-7xl mx-auto'>
+            <AuthShell>
                 <form onSubmit={submitHandler} className='w-1/2 border border-gray-200 rounded-md p-4 my-10'>
-                    <h1 className='font-bold text-xl mb-5'>Login</h1>
+                    <h1>Welcome back.</h1><p className="auth-subtitle">Your next chapter is waiting. Let’s pick up where you left off.</p>
                     <div className='my-2'>
-                        <Label>Email</Label>
+                        <Label htmlFor="email">Email</Label>
                         <Input
                             type="email"
                             value={input.email}
-                            name="email"
+                            name="email" id="email" required
                             onChange={changeEventHandler}
-                            placeholder="patel@gmail.com"
+                            placeholder="you@example.com"
                         />
                     </div>
 
                     <div className='my-2'>
-                        <Label>Password</Label>
+                        <Label htmlFor="password">Password</Label>
                         <Link to="/forgot-password" className="float-right text-sm text-blue-600">Forgot password?</Link>
                         <PasswordInput
-                            autoComplete="current-password"
+                            autoComplete="current-password" aria-label="Password"
                             value={input.password}
-                            name="password"
+                            name="password" id="password" required
                             onChange={changeEventHandler}
-                            placeholder="patel@gmail.com"
+                            placeholder="Enter your password"
                         />
                     </div>
                     <div className='flex items-center justify-between'>
@@ -88,7 +89,7 @@ const Login = () => {
                                 <Input
                                     type="radio"
                                     name="role"
-                                    value="student"
+                                    value="student" id="r1"
                                     checked={input.role === 'student'}
                                     onChange={changeEventHandler}
                                     className="cursor-pointer"
@@ -99,7 +100,7 @@ const Login = () => {
                                 <Input
                                     type="radio"
                                     name="role"
-                                    value="recruiter"
+                                    value="recruiter" id="r2"
                                     checked={input.role === 'recruiter'}
                                     onChange={changeEventHandler}
                                     className="cursor-pointer"
@@ -109,11 +110,11 @@ const Login = () => {
                         </RadioGroup>
                     </div>
                     {
-                        loading ? <Button disabled className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>
+                        loading ? <Button disabled className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Sign in</Button>
                     }
                     <span className='text-sm'>Don't have an account? <Link to="/signup" className='text-blue-600'>Signup</Link></span>
                 </form>
-            </div>
+            </AuthShell>
         </div>
     )
 }

@@ -1,3 +1,4 @@
+import AuthShell from './AuthShell';
 import React, { useEffect, useState } from 'react'
 import Navbar from '../shared/Navbar'
 import { Label } from '../ui/label'
@@ -145,47 +146,47 @@ const Signup = () => {
     return (
         <div>
             <Navbar />
-            <div className='flex items-center justify-center max-w-7xl mx-auto'>
+            <AuthShell>
                 <form onSubmit={submitHandler} className='w-1/2 border border-gray-200 rounded-md p-4 my-10'>
-                    <h1 className='font-bold text-xl mb-5'>Sign Up</h1>
+                    <h1>Start something good.</h1><p className="auth-subtitle">Join carrerNex. Your next opportunity starts with you.</p>
                     <div className='my-2'>
-                        <Label>Full Name</Label>
+                        <Label htmlFor="fullname">Full Name</Label>
                         <Input
                             type="text"
                             value={input.fullname}
-                            name="fullname"
+                            name="fullname" id="fullname" required
                             onChange={changeEventHandler}
-                            placeholder="patel"
+                            placeholder="Your full name"
                         />
                     </div>
                     <div className='my-2'>
-                        <Label>Email</Label>
+                        <Label htmlFor="email">Email</Label>
                         <Input
                             type="email"
                             value={input.email}
-                            name="email"
+                            name="email" id="email" required
                             onChange={changeEventHandler}
-                            placeholder="patel@gmail.com"
+                            placeholder="you@example.com"
                         />
                     </div>
                     <div className='my-2'>
-                        <Label>Phone Number</Label>
+                        <Label htmlFor="phoneNumber">Phone Number</Label>
                         <Input
                             type="text"
                             value={input.phoneNumber}
-                            name="phoneNumber"
+                            name="phoneNumber" id="phoneNumber" required
                             onChange={changeEventHandler}
                             placeholder="8080808080"
                         />
                     </div>
                     <div className='my-2'>
-                        <Label>Password</Label>
+                        <Label htmlFor="password">Password</Label>
                         <PasswordInput
-                            autoComplete="new-password"
+                            autoComplete="new-password" aria-label="Password"
                             value={input.password}
-                            name="password"
+                            name="password" id="password" required
                             onChange={changeEventHandler}
-                            placeholder="patel@gmail.com"
+                            placeholder="Enter your password"
                         />
                     </div>
                     <div className='flex items-center justify-between'>
@@ -194,7 +195,7 @@ const Signup = () => {
                                 <Input
                                     type="radio"
                                     name="role"
-                                    value="student"
+                                    value="student" id="r1"
                                     checked={input.role === 'student'}
                                     onChange={changeEventHandler}
                                     className="cursor-pointer"
@@ -205,7 +206,7 @@ const Signup = () => {
                                 <Input
                                     type="radio"
                                     name="role"
-                                    value="recruiter"
+                                    value="recruiter" id="r2"
                                     checked={input.role === 'recruiter'}
                                     onChange={changeEventHandler}
                                     className="cursor-pointer"
@@ -214,9 +215,9 @@ const Signup = () => {
                             </div>
                         </RadioGroup>
                         <div className='flex items-center gap-2'>
-                            <Label>Profile</Label>
+                            <Label htmlFor="profile-photo">Profile photo (optional)</Label>
                             <Input
-                                accept="image/*"
+                                id="profile-photo" accept="image/*"
                                 type="file"
                                 onChange={changeFileHandler}
                                 className="cursor-pointer"
@@ -224,11 +225,11 @@ const Signup = () => {
                         </div>
                     </div>
                     {
-                        loading ? <Button disabled className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Signup</Button>
+                        loading ? <Button disabled className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Create account</Button>
                     }
                     <span className='text-sm'>Already have an account? <Link to="/login" className='text-blue-600'>Login</Link></span>
                 </form>
-            </div>
+            </AuthShell>
         </div>
     )
 }

@@ -1,43 +1,55 @@
-import React from 'react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
-import { Button } from './ui/button';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { setSearchedQuery } from '@/redux/jobSlice';
-
-const category = [
-    "Frontend Developer",
-    "Backend Developer",
-    "Data Science",
-    "Graphic Designer",
-    "FullStack Developer"
-]
-
-const CategoryCarousel = () => {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const searchJobHandler = (query) => {
-        dispatch(setSearchedQuery(query));
-        navigate("/browse");
-    }
-
-    return (
+import {
+  Code2,
+  Palette,
+  BarChart3 as ChartNoAxesCombined,
+  Layers3,
+  Server,
+  Terminal,
+} from "lucide-react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setSearchedQuery } from "@/redux/jobSlice";
+const categories = [
+  ["Development", "Frontend", Code2],
+  ["Design & creative", "Designer", Palette],
+  ["Data & analytics", "Data", ChartNoAxesCombined],
+  ["Full stack", "Full", Layers3],
+  ["Backend engineering", "Backend", Server],
+  ["Cloud & DevOps", "DevOps", Terminal],
+];
+export default function CategoryCarousel() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  return (
+    <section className="section-wrap category-section">
+      <div className="section-heading">
         <div>
-            <Carousel className="w-full max-w-xl mx-auto my-20">
-                <CarouselContent>
-                    {
-                        category.map((cat, index) => (
-                            <CarouselItem className="md:basis-1/2 lg-basis-1/3">
-                                <Button onClick={()=>searchJobHandler(cat)} variant="outline" className="rounded-full">{cat}</Button>
-                            </CarouselItem>
-                        ))
-                    }
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-            </Carousel>
+          <span className="eyebrow">FIND YOUR DIRECTION</span>
+          <h2>Different paths. Real possibilities.</h2>
         </div>
-    )
+        <p>
+          Follow your curiosity.
+          <br />
+          Find where you belong.
+        </p>
+      </div>
+      <div className="category-grid">
+        {categories.map(([title, query, Icon]) => (
+          <button
+            key={title}
+            onClick={() => {
+              dispatch(setSearchedQuery(query));
+              navigate("/browse");
+            }}
+          >
+            <span className="category-icon">
+              <Icon size={24} />
+            </span>
+            <strong>{title}</strong>
+            <span>Explore opportunities</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
 }
-
-export default CategoryCarousel

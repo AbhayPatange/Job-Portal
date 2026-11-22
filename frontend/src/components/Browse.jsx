@@ -1,39 +1,75 @@
-import React, { useEffect } from 'react'
-import Navbar from './shared/Navbar'
-import Job from './Job';
-import { useDispatch, useSelector } from 'react-redux';
-import { setSearchedQuery } from '@/redux/jobSlice';
-import useGetAllJobs from '@/hooks/useGetAllJobs';
-
-// const randomJobs = [1, 2,45];
-
-const Browse = () => {
-    useGetAllJobs();
-    const {allJobs} = useSelector(store=>store.job);
-    const dispatch = useDispatch();
-    useEffect(()=>{
-        return ()=>{
-            dispatch(setSearchedQuery(""));
-        }
-    },[])
-    return (
-        <div>
-            <Navbar />
-            <div className='max-w-7xl mx-auto my-10'>
-                <h1 className='font-bold text-xl my-10'>Search Results ({allJobs.length})</h1>
-                <div className='grid grid-cols-3 gap-4'>
-                    {
-                        allJobs.map((job) => {
-                            return (
-                                <Job key={job._id} job={job}/>
-                            )
-                        })
-                    }
-                </div>
-
-            </div>
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Search } from "lucide-react";
+import Navbar from "./shared/Navbar";
+import Footer from "./shared/Footer";
+import Job from "./Job";
+import { setSearchedQuery } from "@/redux/jobSlice";
+import useGetAllJobs from "@/hooks/useGetAllJobs";
+export default function Browse() {
+  useGetAllJobs();
+  const { allJobs, searchedQuery } = useSelector((s) => s.job);
+  const [query, setQuery] = useState(searchedQuery || "");
+  const dispatch = useDispatch();
+  return (
+    <>
+      <Navbar />
+      <main className="workspace">
+        <div className="page-heading">
+          <span className="eyebrow">FOLLOW YOUR CURIOSITY</span>
+          <h1>
+            There’s more <em>out there.</em>
+          </h1>
+          <p>Explore a skill, an interest, or a whole new direction.</p>
         </div>
-    )
+        <form
+          className="browse-search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            dispatch(setSearchedQuery(query));
+          }}
+        >
+          <div className="search-field">
+            <Search size={20} />
+            <input
+              aria-label="Search roles"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="What would you love to do?"
+            />
+          </div>
+          <button className="button-primary">Explore roles</button>
+        </form>
+        <div className="results-count">
+          <strong>
+            {allJobs.length}{" "}
+            {allJobs.length === 1 ? "opportunity" : "opportunities"}
+            {searchedQuery ? " for “" + searchedQuery + "”" : ""}
+          </strong>
+        </div>
+        <div className="jobs-grid">
+          {allJobs.map((job) => (
+            <Job key={job._id} job={job} />
+          ))}
+          {!allJobs.length && (
+            <div className="empty-state">
+              <Search />
+              <h3>A different search could open a new door.</h3>
+              <p>Try a broader keyword such as developer, design, or data.</p>
+              <button
+                className="text-link"
+                onClick={() => {
+                  setQuery("");
+                  dispatch(setSearchedQuery(""));
+                }}
+              >
+                See all opportunities
+              </button>
+            </div>
+          )}
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
 }
-
-export default Browse
