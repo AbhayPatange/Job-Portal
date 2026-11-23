@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { generateFit, generateInterviewPrep, redactContactDetails, validateFitResult } from '../utils/jobFit.js';
+import { generateCoverLetter, generateFit, generateInterviewPrep, redactContactDetails, validateFitResult } from '../utils/jobFit.js';
 
 test('redacts common contact and personal details before provider use', () => {
     const text = redactContactDetails('Asha Patel\nasha@example.com\n+91 98765 43210\nAddress: Pune\nPortfolio: https://example.com', { fullname: 'Asha Patel' });
@@ -62,4 +62,20 @@ test('creates bounded job-specific interview prep', async () => {
     const result = await generateInterviewPrep('Requirements: backend APIs.', async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify(prep) } }] }) }));
     if (priorKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = priorKey;
     assert.equal(result.questions.length, 1);
+});
+
+test('falls back to JSON mode for cover letter drafts when strict mode is rejected', async () => {
+    const priorKey = process.env.GROQ_API_KEY;
+    process.env.GROQ_API_KEY = 'server-only-test-key';
+    let calls = 0;
+    const result = await generateCoverLetter('Title: Engineer', 'Built API features.', async (url, options) => {
+        calls += 1;
+        const body = JSON.parse(options.body);
+        if (calls === 1) return { ok: false, status: 400, json: async () => ({}) };
+        assert.equal(body.response_format.type, 'json_object');
+        return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ subject: 'Application for Engineer', draft: 'Dear Hiring Team,\n\nI am interested in the Engineer role.', editingTip: 'Add one true project outcome.' }) } }] }) };
+    });
+    if (priorKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = priorKey;
+    assert.equal(calls, 2);
+    assert.equal(result.subject, 'Application for Engineer');
 });
