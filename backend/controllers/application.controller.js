@@ -1,5 +1,7 @@
 import { Application } from "../models/application.model.js";
 import { Job } from "../models/job.model.js";
+import mongoose from "mongoose";
+import { User } from "../models/user.model.js";
 
 export const applyJob = async (req, res) => {
     try {
@@ -43,6 +45,28 @@ export const applyJob = async (req, res) => {
         })
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
+    }
+};
+export const bulkApplyJobs = async (req, res) => {
+    try {
+        if (req.role !== 'student') return res.status(403).json({ success: false, message: 'Only candidate accounts can submit applications.' });
+        const jobIds = Array.isArray(req.body?.jobIds) ? [...new Set(req.body.jobIds)] : [];
+        if (!req.body?.consent) return res.status(400).json({ success: false, message: 'Please confirm that you want to submit these applications.' });
+        if (!jobIds.length || jobIds.length > 10 || jobIds.some((id) => typeof id !== 'string' || !mongoose.isValidObjectId(id))) return res.status(400).json({ success: false, message: 'Select between 1 and 10 valid jobs.' });
+        const user = await User.findById(req.id).select('profile.resume').lean();
+        if (!user?.profile?.resume) return res.status(400).json({ success: false, message: 'Upload a PDF resume before applying.' });
+        const jobs = await Job.find({ _id: { $in: jobIds } }).select('_id').lean();
+        const availableIds = jobs.map((job) => String(job._id));
+        const existing = await Application.find({ applicant: req.id, job: { $in: availableIds } }).select('job').lean();
+        const existingIds = new Set(existing.map((application) => String(application.job)));
+        const toApply = availableIds.filter((id) => !existingIds.has(id));
+        if (!toApply.length) return res.status(400).json({ success: false, message: 'You have already applied to the selected available jobs.', appliedJobIds: [] });
+        const applications = await Application.insertMany(toApply.map((job) => ({ job, applicant: req.id })));
+        await Job.updateMany({ _id: { $in: toApply } }, { $push: { applications: { $each: applications.map((application) => application._id) } } });
+        return res.status(201).json({ success: true, message: `${applications.length} application${applications.length === 1 ? '' : 's'} submitted.`, appliedJobIds: toApply, skippedJobIds: jobIds.filter((id) => !toApply.includes(id)) });
+    } catch (error) {
+        if (error?.code === 11000) return res.status(409).json({ success: false, message: 'One or more selected roles were already applied to. Refresh and try again.' });
+        return res.status(500).json({ success: false, message: 'Unable to submit those applications. Please try again.' });
     }
 };
 export const getAppliedJobs = async (req,res) => {

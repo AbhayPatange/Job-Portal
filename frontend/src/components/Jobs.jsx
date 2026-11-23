@@ -6,14 +6,18 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useSelector } from "react-redux";
 import useGetAllJobs from "@/hooks/useGetAllJobs";
 import ExternalOpportunities from "./ExternalOpportunities";
+import BulkApplyDialog from "./BulkApplyDialog";
 export default function Jobs() {
   useGetAllJobs("");
   const { allJobs } = useSelector((s) => s.job);
+  const { user } = useSelector((s) => s.auth);
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
   const [type, setType] = useState("");
   const [experience, setExperience] = useState("");
   const [sort, setSort] = useState("newest");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const locations = [
     ...new Set(allJobs.map((j) => j.location).filter(Boolean)),
   ];
@@ -40,6 +44,8 @@ export default function Jobs() {
         ),
     [allJobs, query, location, type, experience, sort],
   );
+  const selectedJobs = allJobs.filter((job) => selectedIds.includes(job._id));
+  const toggleJob = (id) => setSelectedIds((current) => current.includes(id) ? current.filter((value) => value !== id) : current.length < 10 ? [...current, id] : current);
   return (
     <>
       <Navbar />
@@ -70,6 +76,7 @@ export default function Jobs() {
             <option value="salary">Highest salary</option>
           </select>
         </div>
+        {user?.role === 'student' && <div className="bulk-apply-bar"><div><span className="eyebrow">APPLY FASTER</span><strong>{selectedIds.length ? `${selectedIds.length} role${selectedIds.length === 1 ? '' : 's'} selected` : 'Select up to 10 CarrerNex roles'}</strong><p>Upload your résumé once, review your choices, then apply together.</p></div><div><button type="button" className="text-link" disabled={!selectedIds.length} onClick={() => setSelectedIds([])}>Clear</button><button type="button" className="button-primary" disabled={!selectedIds.length} onClick={() => setBulkOpen(true)}>Apply to selected</button></div></div>}
         <div className="listing-layout">
           <aside className="filters-panel">
             <h2>
@@ -132,7 +139,7 @@ export default function Jobs() {
             </div>
             <div className="jobs-grid two-columns">
               {filtered.map((job) => (
-                <Job key={job._id} job={job} />
+                <Job key={job._id} job={job} selected={selectedIds.includes(job._id)} onSelect={user?.role === 'student' ? toggleJob : undefined} />
               ))}
               {!filtered.length && (
                 <div className="empty-state">
@@ -146,6 +153,7 @@ export default function Jobs() {
         </div>
         <ExternalOpportunities />
       </main>
+      <BulkApplyDialog open={bulkOpen} onOpenChange={setBulkOpen} jobs={selectedJobs} user={user} onComplete={(appliedIds) => setSelectedIds((current) => current.filter((id) => !appliedIds.includes(id)))} />
       <Footer />
     </>
   );
