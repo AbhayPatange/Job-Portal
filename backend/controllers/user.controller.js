@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
+import { Job } from "../models/job.model.js";
+import mongoose from "mongoose";
 
 
 export const register = async (req, res) => {
@@ -186,3 +188,32 @@ export const updateProfile = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Unable to upload your resume. Please try again with a PDF under 5 MB.' });
     }
 }
+
+export const getSavedJobs = async (req, res) => {
+    try {
+        if (req.role !== 'student') return res.status(403).json({ success: false, message: 'Saved jobs are available to candidates.' });
+        const user = await User.findById(req.id).populate({ path: 'profile.savedJobs', populate: { path: 'company' }, options: { sort: { createdAt: -1 } } }).lean();
+        return res.json({ success: true, jobs: user?.profile?.savedJobs?.filter(Boolean) || [] });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Unable to load saved jobs.' });
+    }
+};
+
+export const toggleSavedJob = async (req, res) => {
+    try {
+        if (req.role !== 'student') return res.status(403).json({ success: false, message: 'Only candidate accounts can save jobs.' });
+        const { jobId } = req.params;
+        if (!mongoose.isValidObjectId(jobId) || !await Job.exists({ _id: jobId })) return res.status(404).json({ success: false, message: 'Job not found.' });
+        const user = await User.findById(req.id);
+        const savedJobs = user.profile.savedJobs || [];
+        const existingIndex = savedJobs.findIndex((id) => String(id) === jobId);
+        let saved;
+        if (existingIndex >= 0) { savedJobs.splice(existingIndex, 1); saved = false; }
+        else { if (savedJobs.length >= 50) return res.status(400).json({ success: false, message: 'You can save up to 50 jobs.' }); savedJobs.push(jobId); saved = true; }
+        user.profile.savedJobs = savedJobs;
+        await user.save();
+        return res.json({ success: true, saved, message: saved ? 'Job saved for later.' : 'Job removed from saved roles.' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Unable to update saved jobs.' });
+    }
+};

@@ -1,6 +1,6 @@
-import { MapPin, BriefcaseBusiness, Clock3 } from "lucide-react";
+import { MapPin, BriefcaseBusiness, Clock3, Bookmark } from "lucide-react";
 import { Link } from "react-router-dom";
-export default function Job({ job, selected = false, onSelect }) {
+export default function Job({ job, selected = false, onSelect, saved = false, onSave }) {
   const days = Math.max(
     0,
     Math.floor((Date.now() - new Date(job.createdAt)) / 86400000),
@@ -49,6 +49,7 @@ export default function Job({ job, selected = false, onSelect }) {
           View role
         </Link>
         {onSelect && <button type="button" className={selected ? "job-select is-selected" : "job-select"} onClick={() => onSelect(job._id)} aria-pressed={selected}>{selected ? "Selected" : "Select"}</button>}
+        {onSave && <button type="button" className={saved ? "job-save is-saved" : "job-save"} onClick={() => onSave(job._id)} aria-pressed={saved}><Bookmark size={14} fill={saved ? "currentColor" : "none"} />{saved ? "Saved" : "Save"}</button>}
       </div>
     </article>
   );

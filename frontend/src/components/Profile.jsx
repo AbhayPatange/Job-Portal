@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
@@ -11,7 +11,10 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   Clock3,
+  Bookmark,
 } from "lucide-react";
+import axios from "axios";
+import { USER_API_END_POINT } from "@/utils/constant";
 import Navbar from "./shared/Navbar";
 import Footer from "./shared/Footer";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
@@ -258,12 +261,18 @@ export function ProfileContent({
                 <AppliedJobTable applications={applications} />
               )}
             </section>
+            {user.role === 'student' && <SavedJobs />}
           </div>
         </div>
       </main>
       <UpdateProfileDialog open={open} setOpen={setOpen} />
     </>
   );
+}
+function SavedJobs() {
+  const [state, setState] = useState({ loading: true, jobs: [] });
+  useEffect(() => { const controller = new AbortController(); axios.get(`${USER_API_END_POINT}/saved-jobs`, { withCredentials: true, signal: controller.signal }).then(({ data }) => setState({ loading: false, jobs: data.jobs || [] })).catch(() => setState({ loading: false, jobs: [] })); return () => controller.abort(); }, []);
+  return <section className="profile-surface saved-roles" aria-labelledby="saved-roles-heading"><div className="profile-section-heading"><span className="profile-section-icon"><Bookmark size={20} /></span><div><h2 id="saved-roles-heading">Saved for later</h2><p>Roles you want to return to.</p></div></div>{state.loading ? <p className="profile-placeholder">Loading saved roles…</p> : state.jobs.length ? <div className="saved-role-list">{state.jobs.slice(0, 6).map((job) => <Link key={job._id} to={`/description/${job._id}`}><strong>{job.title}</strong><span>{job.company?.name || 'Hiring team'} · {job.location}</span></Link>)}</div> : <p className="profile-placeholder">Save a role from Find a job and it will appear here.</p>}</section>;
 }
 function SignedInProfile({ user }) {
   const { loading, error } = useGetAppliedJobs();

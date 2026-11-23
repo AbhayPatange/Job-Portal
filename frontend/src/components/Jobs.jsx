@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Navbar from "./shared/Navbar";
 import Footer from "./shared/Footer";
 import Job from "./Job";
@@ -7,6 +7,9 @@ import { useSelector } from "react-redux";
 import useGetAllJobs from "@/hooks/useGetAllJobs";
 import ExternalOpportunities from "./ExternalOpportunities";
 import BulkApplyDialog from "./BulkApplyDialog";
+import axios from "axios";
+import { USER_API_END_POINT } from "@/utils/constant";
+import { toast } from "sonner";
 export default function Jobs() {
   useGetAllJobs("");
   const { allJobs } = useSelector((s) => s.job);
@@ -18,6 +21,8 @@ export default function Jobs() {
   const [sort, setSort] = useState("newest");
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [savedIds, setSavedIds] = useState([]);
+  useEffect(() => { if (user?.role !== 'student') return; const controller = new AbortController(); axios.get(`${USER_API_END_POINT}/saved-jobs`, { withCredentials: true, signal: controller.signal }).then(({ data }) => setSavedIds((data.jobs || []).map((job) => job._id))).catch(() => {}); return () => controller.abort(); }, [user?._id, user?.role]);
   const locations = [
     ...new Set(allJobs.map((j) => j.location).filter(Boolean)),
   ];
@@ -46,6 +51,7 @@ export default function Jobs() {
   );
   const selectedJobs = allJobs.filter((job) => selectedIds.includes(job._id));
   const toggleJob = (id) => setSelectedIds((current) => current.includes(id) ? current.filter((value) => value !== id) : current.length < 10 ? [...current, id] : current);
+  const toggleSaved = async (id) => { try { const { data } = await axios.post(`${USER_API_END_POINT}/saved-jobs/${id}`, {}, { withCredentials: true }); setSavedIds((current) => data.saved ? [...current, id] : current.filter((value) => value !== id)); toast.success(data.message); } catch (error) { toast.error(error.response?.data?.message || 'Unable to update saved jobs.'); } };
   return (
     <>
       <Navbar />
@@ -139,7 +145,7 @@ export default function Jobs() {
             </div>
             <div className="jobs-grid two-columns">
               {filtered.map((job) => (
-                <Job key={job._id} job={job} selected={selectedIds.includes(job._id)} onSelect={user?.role === 'student' ? toggleJob : undefined} />
+                <Job key={job._id} job={job} selected={selectedIds.includes(job._id)} onSelect={user?.role === 'student' ? toggleJob : undefined} saved={savedIds.includes(job._id)} onSave={user?.role === 'student' ? toggleSaved : undefined} />
               ))}
               {!filtered.length && (
                 <div className="empty-state">
