@@ -76,3 +76,15 @@ export async function generateFit(resumeText, jobText, fetcher = fetch) {
         return validateFitResult(JSON.parse(output), resumeText, jobText);
     }
 }
+
+const interviewSchema = object({ openingTip: string, questions: { type: 'array', items: object({ question: string, whyItMatters: string, answerApproach: string }) } });
+const interviewInstructions = `You are CarrerNex's candidate-facing interview coach. Use only the supplied job text. Return 4–6 practical interview questions and a concise answer approach for each. Do not claim these are the employer's actual questions, make hiring predictions, or use sensitive characteristics. Focus on technical, role, and project discussion. Return only a JSON object.`;
+export async function generateInterviewPrep(jobText, fetcher = fetch) {
+    const request = response_format => fetcher('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: process.env.GROQ_FIT_MODEL || 'openai/gpt-oss-20b', store: false, max_tokens: 1800, temperature: 0.3, messages: [{ role: 'system', content: interviewInstructions }, { role: 'user', content: JSON.stringify({ jobText }) }], response_format }), signal: AbortSignal.timeout(45000) });
+    let response = await request({ type: 'json_schema', json_schema: { name: 'interview_prep', strict: true, schema: interviewSchema } });
+    if (!response.ok && [400, 422].includes(response.status)) response = await request({ type: 'json_object' });
+    if (!response.ok) { const error = new Error(`Groq request failed (${response.status})`); error.providerStatus = response.status; throw error; }
+    const result = JSON.parse((await response.json()).choices?.[0]?.message?.content || '');
+    if (!result || typeof result.openingTip !== 'string' || !Array.isArray(result.questions) || result.questions.length < 1 || result.questions.length > 6 || !result.questions.every(item => item && typeof item.question === 'string' && typeof item.whyItMatters === 'string' && typeof item.answerApproach === 'string')) throw new Error('Invalid interview prep result');
+    return result;
+}

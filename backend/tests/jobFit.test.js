@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { generateFit, redactContactDetails, validateFitResult } from '../utils/jobFit.js';
+import { generateFit, generateInterviewPrep, redactContactDetails, validateFitResult } from '../utils/jobFit.js';
 
 test('redacts common contact and personal details before provider use', () => {
     const text = redactContactDetails('Asha Patel\nasha@example.com\n+91 98765 43210\nAddress: Pune\nPortfolio: https://example.com', { fullname: 'Asha Patel' });
@@ -53,4 +53,13 @@ test('falls back to JSON object mode only when strict schema mode is rejected', 
     if (priorKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = priorKey;
     assert.equal(calls, 2);
     assert.equal(analysis.summary, result.summary);
+});
+
+test('creates bounded job-specific interview prep', async () => {
+    const priorKey = process.env.GROQ_API_KEY;
+    process.env.GROQ_API_KEY = 'server-only-test-key';
+    const prep = { openingTip: 'Connect one project to the role requirements.', questions: [{ question: 'How would you design a REST API?', whyItMatters: 'The job mentions backend APIs.', answerApproach: 'Use a real project and explain tradeoffs.' }] };
+    const result = await generateInterviewPrep('Requirements: backend APIs.', async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify(prep) } }] }) }));
+    if (priorKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = priorKey;
+    assert.equal(result.questions.length, 1);
 });

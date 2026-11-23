@@ -5,12 +5,12 @@ const schema = new mongoose.Schema({
     expiresAt: { type: Date, index: { expires: 0 } },
 });
 export const AiUsage = mongoose.model('AiUsage', schema);
-export async function reserveFitUsage(userId) {
+async function reserveUsage(userId, feature, userLimit, globalLimit) {
     const now = new Date();
     const day = now.toISOString().slice(0, 10);
     const expiresAt = new Date(now.getTime() + 2 * 86400000);
     const reservedKeys = [];
-    for (const [key, limit] of [[`user:${userId}:${day}`, 5], [`global:${day}`, 50]]) {
+    for (const [key, limit] of [[`user:${feature}:${userId}:${day}`, userLimit], [`global:${feature}:${day}`, globalLimit]]) {
         try { await AiUsage.updateOne({ _id: key }, { $setOnInsert: { count: 0, expiresAt } }, { upsert: true }); }
         catch (error) { if (error.code !== 11000) throw error; }
         const reserved = await AiUsage.findOneAndUpdate({ _id: key, count: { $lt: limit } }, { $inc: { count: 1 } });
@@ -24,3 +24,5 @@ export async function reserveFitUsage(userId) {
     }
     return true;
 }
+export const reserveFitUsage = userId => reserveUsage(userId, 'fit', 5, 50);
+export const reserveInterviewUsage = userId => reserveUsage(userId, 'interview', 5, 50);
