@@ -26,3 +26,4 @@ async function reserveUsage(userId, feature, userLimit, globalLimit) {
 }
 export const reserveFitUsage = userId => reserveUsage(userId, 'fit', 5, 50);
 export const reserveInterviewUsage = userId => reserveUsage(userId, 'interview', 5, 50);
+export const reserveCoverLetterUsage = userId => reserveUsage(userId, 'cover-letter', 3, 30);

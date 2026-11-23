@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import JobFitAssistant from './JobFitAssistant';
 import InterviewPrepAssistant from './InterviewPrepAssistant';
+import CoverLetterAssistant from './CoverLetterAssistant';
 
 const JobDescription = () => {
     const {singleJob} = useSelector(store => store.job);
@@ -79,6 +80,7 @@ const JobDescription = () => {
             <h1 className='border-b-2 border-b-gray-300 font-medium py-4'>Job Description</h1>
             <JobFitAssistant job={singleJob} user={user} />
             <InterviewPrepAssistant job={singleJob} user={user} />
+            <CoverLetterAssistant job={singleJob} user={user} />
             <div className='my-4'>
                 <h1 className='font-bold my-1'>Role: <span className='pl-4 font-normal text-gray-800'>{singleJob?.title}</span></h1>
                 <h1 className='font-bold my-1'>Location: <span className='pl-4 font-normal text-gray-800'>{singleJob?.location}</span></h1>

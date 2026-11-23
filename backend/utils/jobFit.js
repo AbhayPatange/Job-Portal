@@ -88,3 +88,13 @@ export async function generateInterviewPrep(jobText, fetcher = fetch) {
     if (!result || typeof result.openingTip !== 'string' || !Array.isArray(result.questions) || result.questions.length < 1 || result.questions.length > 6 || !result.questions.every(item => item && typeof item.question === 'string' && typeof item.whyItMatters === 'string' && typeof item.answerApproach === 'string')) throw new Error('Invalid interview prep result');
     return result;
 }
+
+const coverLetterSchema = object({ subject: string, draft: string, editingTip: string });
+const coverLetterInstructions = `You are CarrerNex's candidate-facing writing coach. Draft a concise, professional cover letter using ONLY the supplied job text and candidate highlights. Never invent achievements, skills, employers, metrics, qualifications, or personal details. Do not make hiring predictions. If an important detail is missing, use neutral wording rather than guessing. Keep the draft under 300 words and return only a JSON object.`;
+export async function generateCoverLetter(jobText, highlights, fetcher = fetch) {
+    const response = await fetcher('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: process.env.GROQ_FIT_MODEL || 'openai/gpt-oss-20b', store: false, max_tokens: 1500, temperature: 0.35, messages: [{ role: 'system', content: coverLetterInstructions }, { role: 'user', content: JSON.stringify({ jobText, candidateHighlights: highlights }) }], response_format: { type: 'json_schema', json_schema: { name: 'cover_letter', strict: true, schema: coverLetterSchema } } }), signal: AbortSignal.timeout(45000) });
+    if (!response.ok) { const error = new Error(`Groq request failed (${response.status})`); error.providerStatus = response.status; throw error; }
+    const result = JSON.parse((await response.json()).choices?.[0]?.message?.content || '');
+    if (!result || ![result.subject, result.draft, result.editingTip].every(value => typeof value === 'string' && value.trim())) throw new Error('Invalid cover letter result');
+    return result;
+}
