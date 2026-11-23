@@ -59,6 +59,9 @@ export default function HeroSection() {
             </span>
             Your ambitions. Your pace. Your next move.
           </div>
+          <a className="hero-ai-link" href="#carrernex-ai">
+            <Sparkles size={15} /> Meet CarrerNex AI
+          </a>
         </div>
         <div
           className="hero-art"
