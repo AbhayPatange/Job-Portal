@@ -124,9 +124,17 @@ export const updateProfile = async (req, res) => {
         const file = req.file;
         let cloudResponse = null;
 
+        if (file && (file.mimetype !== 'application/pdf' || !file.originalname.toLowerCase().endsWith('.pdf'))) {
+            return res.status(400).json({ success: false, message: 'Please upload a PDF resume no larger than 5 MB.' });
+        }
         if (file) {
             const fileUri = getDataUri(file);
-            cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+            cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                resource_type: 'raw',
+                folder: 'carrernex/resumes',
+                use_filename: true,
+                unique_filename: true,
+            });
         }
 
 
@@ -175,6 +183,6 @@ export const updateProfile = async (req, res) => {
             success: true
         })
     } catch (error) {
-        return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
+        return res.status(500).json({ success: false, message: 'Unable to upload your resume. Please try again with a PDF under 5 MB.' });
     }
 }
