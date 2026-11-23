@@ -20,7 +20,7 @@ export const fitInstructions = `You are CarrerNex's private, candidate-facing ca
 Return concise, practical feedback, not hiring decisions. Never assign scores, rank applicants, predict hiring outcomes, or recommend acceptance/rejection. Never use or infer age, gender, ethnicity, disability, religion, nationality, family status, or other sensitive characteristics. Do not invent skills, experience, qualifications, metrics or accomplishments.
 Give up to 5 strengths, each with a short exact quote from the job in jobEvidence AND from the resume in resumeEvidence. Quotes must be verbatim substrings of the supplied texts, without ellipses. Explain their connection without exaggerating.
 Give up to 5 gaps, each with an exact job quote and a suggestion. Say 'not evidenced in the provided resume', never claim that the candidate lacks a skill. Include only job-related requirements, and avoid inferring total years from overlapping dates. If text is insufficient, say so explicitly. Empty arrays are fine.
-Give up to 5 actionable resume improvements, explicitly conditional on what is true. Do not invent example achievements. Summary at most 100 words, each other field at most 70 words. No markdown or HTML.`;
+Give up to 5 actionable resume improvements, explicitly conditional on what is true. Do not invent example achievements. Summary at most 100 words, each other field at most 70 words. Return only a JSON object—no markdown or HTML.`;
 export function validateFitResult(result, resume, job) {
     const validString = value => typeof value === 'string' && value.trim().length > 0 && value.length <= 1500;
     const normalized = value => value.replace(/\s+/g, ' ').toLowerCase().trim();
@@ -35,7 +35,7 @@ export function validateFitResult(result, resume, job) {
 export function fitEnabled() {
     return process.env.AI_FIT_ENABLED === 'true' && Boolean(process.env.GROQ_API_KEY);
 }
-export async function generateFit(resumeText, jobText, fetcher = fetch) {
+async function requestGroqFit(resumeText, jobText, responseFormat, fetcher) {
     const response = await fetcher('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, 'Content-Type': 'application/json' },
@@ -49,13 +49,30 @@ export async function generateFit(resumeText, jobText, fetcher = fetch) {
                 { role: 'system', content: fitInstructions },
                 { role: 'user', content: JSON.stringify({ resumeText, jobText }) },
             ],
-            response_format: { type: 'json_schema', json_schema: { name: 'job_fit', strict: true, schema: fitSchema } },
+            response_format: responseFormat,
         }),
         signal: AbortSignal.timeout(45000),
     });
-    if (!response.ok) throw new Error('AI provider unavailable');
+    if (!response.ok) {
+        const error = new Error(`Groq request failed (${response.status})`);
+        error.providerStatus = response.status;
+        throw error;
+    }
     const data = await response.json();
     const output = data.choices?.[0]?.message?.content;
     if (typeof output !== 'string') throw new Error('Incomplete AI response');
-    return validateFitResult(JSON.parse(output), resumeText, jobText);
+    return output;
+}
+export async function generateFit(resumeText, jobText, fetcher = fetch) {
+    const strictFormat = { type: 'json_schema', json_schema: { name: 'job_fit', strict: true, schema: fitSchema } };
+    try {
+        const output = await requestGroqFit(resumeText, jobText, strictFormat, fetcher);
+        return validateFitResult(JSON.parse(output), resumeText, jobText);
+    } catch (error) {
+        // Some free-tier model deployments can temporarily reject strict schemas.
+        // Fall back only for a schema/request error, while retaining server validation.
+        if (![400, 422].includes(error.providerStatus)) throw error;
+        const output = await requestGroqFit(resumeText, jobText, { type: 'json_object' }, fetcher);
+        return validateFitResult(JSON.parse(output), resumeText, jobText);
+    }
 }

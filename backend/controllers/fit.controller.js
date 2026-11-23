@@ -26,8 +26,11 @@ export async function checkJobFit(req, res) {
         if (!await reserveFitUsage(req.id)) return res.status(429).json({ success: false, message: 'The daily AI limit has been reached. Please try again tomorrow (UTC).' });
         const analysis = await generateFit(resume, jobText);
         return res.json({ success: true, analysis, jobId: String(job._id) });
-    } catch {
+    } catch (error) {
         // Never log resumes, prompts, provider bodies, or credentials.
+        console.error('AI fit request failed:', error.message, error.providerStatus ? `(provider status ${error.providerStatus})` : '');
+        if (error.providerStatus === 429) return res.status(429).json({ success: false, message: 'The AI service is busy. Please try again shortly.' });
+        if (error.providerStatus === 401 || error.providerStatus === 403) return res.status(503).json({ success: false, message: 'The AI service configuration needs attention. Please try again later.' });
         return res.status(502).json({ success: false, message: 'We could not produce a reliable analysis. Please try again later.' });
     }
 }

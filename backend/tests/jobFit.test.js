@@ -35,3 +35,22 @@ test('uses Groq structured output without exposing the key to clients', async ()
     assert.equal(request.options.response_format.json_schema.strict, true);
     assert.equal(analysis.summary, result.summary);
 });
+
+test('falls back to JSON object mode only when strict schema mode is rejected', async () => {
+    const priorKey = process.env.GROQ_API_KEY;
+    process.env.GROQ_API_KEY = 'server-only-test-key';
+    let calls = 0;
+    const resume = 'Built accessible React dashboards and tested APIs.';
+    const job = 'Requirements: React experience and API testing.';
+    const result = { summary: 'The provided text shows one relevant skill.', strengths: [{ requirement: 'React', jobEvidence: 'React experience', resumeEvidence: 'React dashboards', explanation: 'Both texts mention React.' }], gaps: [], improvements: ['If true, add the dashboard outcomes.'] };
+    const analysis = await generateFit(resume, job, async (url, options) => {
+        calls += 1;
+        const body = JSON.parse(options.body);
+        if (calls === 1) return { ok: false, status: 400, json: async () => ({}) };
+        assert.equal(body.response_format.type, 'json_object');
+        return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify(result) } }] }) };
+    });
+    if (priorKey === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = priorKey;
+    assert.equal(calls, 2);
+    assert.equal(analysis.summary, result.summary);
+});
