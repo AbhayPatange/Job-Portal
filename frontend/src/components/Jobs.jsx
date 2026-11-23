@@ -5,6 +5,7 @@ import Job from "./Job";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useSelector } from "react-redux";
 import useGetAllJobs from "@/hooks/useGetAllJobs";
+import ExternalOpportunities from "./ExternalOpportunities";
 export default function Jobs() {
   useGetAllJobs("");
   const { allJobs } = useSelector((s) => s.job);
@@ -143,6 +144,7 @@ export default function Jobs() {
             </div>
           </section>
         </div>
+        <ExternalOpportunities />
       </main>
       <Footer />
     </>
