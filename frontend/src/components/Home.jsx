@@ -4,6 +4,7 @@ import HeroSection from './HeroSection'
 import CategoryCarousel from './CategoryCarousel'
 import LatestJobs from './LatestJobs'
 import AIShowcase from './AIShowcase'
+import ExternalOpportunities from './ExternalOpportunities'
 import Footer from './shared/Footer'
 import useGetAllJobs from '@/hooks/useGetAllJobs'
 import { useSelector } from 'react-redux'
@@ -24,6 +25,7 @@ const Home = () => {
       <HeroSection />
       <CategoryCarousel />
       <AIShowcase />
+      <ExternalOpportunities />
       <LatestJobs />
       <Footer />
     </div>

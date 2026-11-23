@@ -5,9 +5,11 @@ import { fitStatus, checkJobFit } from '../controllers/fit.controller.js';
 import { generateInterviewPrepForJob } from '../controllers/interview.controller.js';
 import { draftCoverLetter } from '../controllers/coverLetter.controller.js';
 import { authRateLimit } from '../middlewares/authRateLimit.js';
+import { getExternalJobs } from '../controllers/externalJob.controller.js';
 
 const router = express.Router();
 router.get('/fit-status', fitStatus);
+router.get('/external', getExternalJobs);
 router.post('/:id/fit', isAuthenticated, authRateLimit, checkJobFit);
 router.post('/:id/interview-prep', isAuthenticated, authRateLimit, generateInterviewPrepForJob);
 router.post('/:id/cover-letter', isAuthenticated, authRateLimit, draftCoverLetter);
