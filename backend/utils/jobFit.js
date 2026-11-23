@@ -33,25 +33,29 @@ export function validateFitResult(result, resume, job) {
     return { summary: result.summary, strengths: result.strengths, gaps: result.gaps, improvements: result.improvements };
 }
 export function fitEnabled() {
-    return process.env.AI_FIT_ENABLED === 'true' && Boolean(process.env.OPENAI_API_KEY);
+    return process.env.AI_FIT_ENABLED === 'true' && Boolean(process.env.GROQ_API_KEY);
 }
 export async function generateFit(resumeText, jobText, fetcher = fetch) {
-    const response = await fetcher('https://api.openai.com/v1/responses', {
+    const response = await fetcher('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+        headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: process.env.OPENAI_FIT_MODEL || 'gpt-4.1-mini', store: false, max_output_tokens: 2600,
-            instructions: fitInstructions,
-            input: JSON.stringify({ resumeText, jobText }),
-            text: { format: { type: 'json_schema', name: 'job_fit', strict: true, schema: fitSchema } },
+            // Groq's free tier runs this open-weight model with strict structured output.
+            model: process.env.GROQ_FIT_MODEL || 'openai/gpt-oss-20b',
+            store: false,
+            max_tokens: 2600,
+            temperature: 0.2,
+            messages: [
+                { role: 'system', content: fitInstructions },
+                { role: 'user', content: JSON.stringify({ resumeText, jobText }) },
+            ],
+            response_format: { type: 'json_schema', json_schema: { name: 'job_fit', strict: true, schema: fitSchema } },
         }),
         signal: AbortSignal.timeout(45000),
     });
     if (!response.ok) throw new Error('AI provider unavailable');
     const data = await response.json();
-    if (data.status !== 'completed') throw new Error('Incomplete AI response');
-    const content = (data.output || []).flatMap(item => item.type === 'message' ? item.content || [] : []);
-    if (content.some(item => item.type === 'refusal')) throw new Error('AI response unavailable');
-    const output = content.filter(item => item.type === 'output_text').map(item => item.text).join('');
+    const output = data.choices?.[0]?.message?.content;
+    if (typeof output !== 'string') throw new Error('Incomplete AI response');
     return validateFitResult(JSON.parse(output), resumeText, jobText);
 }

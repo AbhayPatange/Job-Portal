@@ -6,7 +6,7 @@ import { fitEnabled, generateFit, redactContactDetails } from '../utils/jobFit.j
 
 export function fitStatus(req, res) {
     res.set('Cache-Control', 'no-store');
-    res.json({ available: fitEnabled(), provider: 'OpenAI', maxCharacters: 16000 });
+    res.json({ available: fitEnabled(), provider: 'Groq', maxCharacters: 16000 });
 }
 export async function checkJobFit(req, res) {
     res.set('Cache-Control', 'no-store');
