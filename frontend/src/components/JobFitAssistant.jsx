@@ -41,7 +41,9 @@ export default function JobFitAssistant({ job, user }) {
     }
   };
 
-  if (!user || user.role !== 'student' || !job?._id) return null;
+  if (!job?._id) return null;
+  if (!user) return <FitNotice title="See how your résumé fits this role" text="Sign in as a candidate to review your résumé privately and get evidence-based career feedback." action="Sign in to try AI fit" />;
+  if (user.role !== 'student') return <FitNotice title="AI fit review is for candidates" text="Candidate accounts can compare a reviewed résumé with this job. Recruiter accounts can continue managing openings from the dashboard." />;
   if (state.status === 'unavailable') return <section className="fit-card fit-unavailable"><Sparkles aria-hidden="true" /><div><p className="fit-kicker">Career guidance</p><h2>AI fit review is coming soon</h2><p>We are finishing the private résumé review service. Your résumé is not sent anywhere from this page.</p></div></section>;
 
   return <section className="fit-card" aria-labelledby="fit-title">
@@ -60,6 +62,10 @@ export default function JobFitAssistant({ job, user }) {
     <div className="fit-submit-row"><button type="button" className="fit-submit" disabled={state.status === 'working'} onClick={requestFit}>{state.status === 'working' ? <><LoaderCircle className="fit-spin" aria-hidden="true" />Analyzing your evidence…</> : <><Sparkles aria-hidden="true" />Analyze résumé fit</>}</button><Link to="/profile" className="fit-profile-link">Update profile</Link></div>
     {state.analysis && <FitAnalysis analysis={state.analysis} />}
   </section>;
+}
+
+function FitNotice({ title, text, action }) {
+  return <section className="fit-card fit-unavailable fit-notice"><Sparkles aria-hidden="true" /><div><p className="fit-kicker">CarrerNex AI</p><h2>{title}</h2><p>{text}</p>{action && <Link to="/login" className="fit-notice-action">{action}</Link>}</div></section>;
 }
 
 function FitAnalysis({ analysis }) {
