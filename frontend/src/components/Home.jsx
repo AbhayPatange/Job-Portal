@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import Navbar from './shared/Navbar'
-import HeroSection from './HeroSection'
+import HomeExperience from './HomeExperience'
 import CategoryCarousel from './CategoryCarousel'
 import LatestJobs from './LatestJobs'
 import AIShowcase from './AIShowcase'
@@ -22,7 +22,7 @@ const Home = () => {
   return (
     <div>
       <Navbar />
-      <HeroSection />
+      <HomeExperience />
       <CategoryCarousel />
       <AIShowcase />
       <ExternalOpportunities />
